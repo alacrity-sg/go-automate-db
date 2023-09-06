@@ -3,7 +3,7 @@ name: Application Release
 on:
   push:
     tags:
-      - release-*
+      - v*
 
 jobs:
   build:
