@@ -1,3 +1,5 @@
+name: Application Build
+
 on:
   pull_request:
     branches:
@@ -12,6 +14,8 @@ jobs:
     services:
       postgres:
         image: postgres:12.15
+        ports:
+          - 5432:5432
         env:
           POSTGRES_PASSWORD: admin
           POSTGRES_USER: admin
@@ -31,5 +35,5 @@ jobs:
         run: go build -v ./...
       - name: Go Test
         run: go test -v ./...
-          
+
 

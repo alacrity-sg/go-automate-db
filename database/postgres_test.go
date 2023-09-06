@@ -18,7 +18,7 @@ func TestCreateDatabaseWithUser(t *testing.T) {
 	settings := &PGSettings{
 		Username: "admin",
 		Password: "admin",
-		Host:     "postgres",
+		Host:     "localhost",
 		Port:     "5432",
 		Database: "postgres",
 	}
