@@ -8,9 +8,13 @@ on:
     branches:
       - main
 
+env:
+  go_version: "1.21"
+  IMAGE_NAME: go-automate-db
 jobs:
-  test:
+  app_test:
     runs-on: ubuntu-latest
+    name: Application Test
     services:
       postgres:
         image: postgres:12.15
@@ -30,10 +34,25 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.21'
+          go-version: ${{ env.go_version }}
       - name: Go Build
         run: go build -v ./...
       - name: Go Test
         run: go test -v ./...
+  app_build:
+    needs:
+      - app_test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.go_version }}
+      - name: Go Build
+        run: go build -o go-automate-db
+      - name: Build Docker image
+        run: docker build . --file Dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
 
 
