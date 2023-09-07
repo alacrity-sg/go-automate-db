@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+type DBSettings[T any] struct {
+}
 type PGSettings struct {
 	Username string
 	Password string
