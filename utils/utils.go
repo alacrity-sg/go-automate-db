@@ -10,12 +10,15 @@ import (
 )
 
 type CommandLineInputs struct {
-	database string `default:""`
-	username string `default:""`
-	password string `default:""`
-	host     string `default:""`
-	port     string `default:""`
-	db_type  string `default:""`
+	database    string `default:""`
+	username    string `default:""`
+	password    string `default:""`
+	host        string `default:""`
+	port        string `default:""`
+	dbType      string `default:""`
+	newDatabase string `default:""`
+	newUsername string `default:""`
+	newPassword string `default:""`
 }
 
 func ParseEnvironmentVariables() *database.PGSettings {
@@ -37,17 +40,10 @@ func ParseEnvironmentVariables() *database.PGSettings {
 
 }
 
-func ASimpleParse(args []string) string {
-	var in string
-	flag.StringVar(&in, "in", "test", "usage")
-	flag.CommandLine.Parse(args)
-	return in
-}
-
 func ParseInputFlags(args []string) (*database.PGSettings, error) {
 	inputs := &CommandLineInputs{}
-	flag.StringVar(&inputs.db_type, "t", "", "to specify sql type")
-	flag.StringVar(&inputs.db_type, "type", inputs.db_type, "to specify sql type")
+	flag.StringVar(&inputs.dbType, "t", "", "to specify sql type")
+	flag.StringVar(&inputs.dbType, "type", inputs.dbType, "to specify sql type")
 
 	flag.StringVar(&inputs.username, "u", "", "username to connect to db as")
 	flag.StringVar(&inputs.username, "username", inputs.username, "username to connect to db as")
@@ -63,6 +59,11 @@ func ParseInputFlags(args []string) (*database.PGSettings, error) {
 
 	flag.StringVar(&inputs.database, "db", "", "database to connect to")
 	flag.StringVar(&inputs.database, "database", inputs.database, "database to connect to")
+
+	flag.StringVar(&inputs.newDatabase, "new_db", "", "database to connect to")
+	flag.StringVar(&inputs.newUsername, "new_username", "", "database to connect to")
+	flag.StringVar(&inputs.newPassword, "new_password", "", "database to connect to")
+
 	err := flag.CommandLine.Parse(args)
 	if err != nil {
 		log.Fatalf("Fatal error processing arguments. %s", err.Error())
@@ -72,11 +73,11 @@ func ParseInputFlags(args []string) (*database.PGSettings, error) {
 
 func buildDatabaseSettings(inputs *CommandLineInputs) (*database.PGSettings, error) {
 	// Check if struct is empty:
-	if inputs.db_type == "" {
+	if inputs.dbType == "" {
 		return nil, errors.New("required input [t,type] is not provided. please review the documentation")
 	}
 	log.Println(inputs)
-	switch strings.ToLower(inputs.db_type) {
+	switch strings.ToLower(inputs.dbType) {
 	case "postgres":
 		settings := &database.PGSettings{
 			Username: inputs.username,

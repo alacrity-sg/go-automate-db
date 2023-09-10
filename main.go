@@ -1,8 +1,8 @@
 package main
 
 import (
-	"flag"
 	_ "github.com/lib/pq"
+	dbsvc "go-automate-database/database"
 	"go-automate-database/utils"
 	"log"
 	"os"
@@ -10,7 +10,8 @@ import (
 
 func main() {
 	//
-	//var settings *dbsvc.PGSettings
+	var settings *dbsvc.PGSettings
+	var err error
 	args := os.Args
 	if len(args) == 0 {
 		// environment variables mode
@@ -18,24 +19,12 @@ func main() {
 			log.Fatalln("No environment variables related to sql found. Please provide via arguments or environment variables.")
 			return
 		}
-		utils.ParseEnvironmentVariables()
+		settings = utils.ParseEnvironmentVariables()
 	} else {
-		var name string
-		flag.StringVar(&name, "name", "", "asdasd")
-		a := os.Args[1:]
-		if args != nil {
-			log.Println(args)
-			a = args
-		}
-		err := flag.CommandLine.Parse(a)
+		settings, err = utils.ParseInputFlags(os.Args[1:])
 		if err != nil {
-			println(err.Error())
+			log.Fatalf("Error parsing command line arguments. %s", err.Error())
 		}
-		log.Println(name)
-		//newUsername := os.Getenv("new_username")
-		//newPassword := os.Getenv("new_password")
-		//newDatabaseName := os.Getenv("new_database")
-
-		//defer settings.CreateDatabaseWithUser(newUsername, newPassword, newDatabaseName)
 	}
+	defer settings.CreateDatabaseWithUser("newUsername", "newPassword", "newDatabaseName")
 }
