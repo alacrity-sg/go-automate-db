@@ -22,11 +22,11 @@ func TestCreateDatabaseWithUser(t *testing.T) {
 		Port:     "5432",
 		Database: "postgres",
 	}
-	CreateDatabaseWithUser(settings, newUser, newPass, newDb)
+	settings.CreateDatabaseWithUser(newUser, newPass, newDb)
 	settings.Username = newUser
 	settings.Password = newPass
 	settings.Database = newDb
-	db := connectPostgresDb(settings)
+	db := settings.connectPostgresDb()
 	defer db.Close()
 	// CRUD test
 	_, err := db.Exec(fmt.Sprintf("CREATE TABLE test_%s (test_id varchar(50) primary key)", uniqueUsableId))

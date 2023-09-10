@@ -1,12 +1,22 @@
 package utils
 
 import (
+	"errors"
 	"flag"
 	"go-automate-database/database"
 	"log"
 	"os"
 	"strings"
 )
+
+type CommandLineInputs struct {
+	database string `default:""`
+	username string `default:""`
+	password string `default:""`
+	host     string `default:""`
+	port     string `default:""`
+	db_type  string `default:""`
+}
 
 func ParseEnvironmentVariables() *database.PGSettings {
 	settings := &database.PGSettings{
@@ -27,44 +37,53 @@ func ParseEnvironmentVariables() *database.PGSettings {
 
 }
 
-func ParseInputFlags() *database.PGSettings {
-	var sqlType string
-	flag.StringVar(&sqlType, "t", "postgres", "to specify sql type, defaults to postgres")
-	flag.StringVar(&sqlType, "type", sqlType, "to specify sql type")
-
-	var sqlUsername string
-	flag.StringVar(&sqlUsername, "u", "", "username to connect to db as")
-	flag.StringVar(&sqlUsername, "username", sqlUsername, "username to connect to db as")
-
-	var sqlPassword string
-	flag.StringVar(&sqlPassword, "P", "", "password to connect to db with")
-	flag.StringVar(&sqlPassword, "password", sqlPassword, "password to connect to db with")
-
-	var sqlHost string
-	flag.StringVar(&sqlHost, "h", "", "host to connect to db with")
-	flag.StringVar(&sqlHost, "host", sqlHost, "host to connect to db with")
-
-	var sqlPort string
-	flag.StringVar(&sqlHost, "p", "", "host to connect to db with")
-	flag.StringVar(&sqlHost, "port", sqlPort, "host to connect to db with")
-
-	var sqlDatabase string
-	flag.StringVar(&sqlDatabase, "db", "", "database to connect to")
-	flag.StringVar(&sqlDatabase, "database", sqlDatabase, "database to connect to")
-
-	return buildDatabaseSettings(
-		sqlType, sqlUsername, sqlPassword, sqlHost, sqlPort, sqlDatabase)
+func ASimpleParse(args []string) string {
+	var in string
+	flag.StringVar(&in, "in", "test", "usage")
+	flag.CommandLine.Parse(args)
+	return in
 }
 
-func buildDatabaseSettings(sqlType string, sqlUsername string, sqlPassword string, sqlHost string, sqlPort string, sqlDatabase string) *database.PGSettings {
-	switch strings.ToLower(sqlType) {
+func ParseInputFlags(args []string) (*database.PGSettings, error) {
+	inputs := &CommandLineInputs{}
+	flag.StringVar(&inputs.db_type, "t", "", "to specify sql type")
+	flag.StringVar(&inputs.db_type, "type", inputs.db_type, "to specify sql type")
+
+	flag.StringVar(&inputs.username, "u", "", "username to connect to db as")
+	flag.StringVar(&inputs.username, "username", inputs.username, "username to connect to db as")
+
+	flag.StringVar(&inputs.password, "p", "", "password to connect to db with")
+	flag.StringVar(&inputs.password, "password", inputs.password, "password to connect to db with")
+
+	flag.StringVar(&inputs.host, "h", "", "host to connect to db with")
+	flag.StringVar(&inputs.host, "host", inputs.host, "host to connect to db with")
+
+	flag.StringVar(&inputs.port, "P", "", "host to connect to db with")
+	flag.StringVar(&inputs.port, "port", inputs.port, "host to connect to db with")
+
+	flag.StringVar(&inputs.database, "db", "", "database to connect to")
+	flag.StringVar(&inputs.database, "database", inputs.database, "database to connect to")
+	err := flag.CommandLine.Parse(args)
+	if err != nil {
+		log.Fatalf("Fatal error processing arguments. %s", err.Error())
+	}
+	return buildDatabaseSettings(inputs)
+}
+
+func buildDatabaseSettings(inputs *CommandLineInputs) (*database.PGSettings, error) {
+	// Check if struct is empty:
+	if inputs.db_type == "" {
+		return nil, errors.New("required input [t,type] is not provided. please review the documentation")
+	}
+	log.Println(inputs)
+	switch strings.ToLower(inputs.db_type) {
 	case "postgres":
 		settings := &database.PGSettings{
-			Username: sqlUsername,
-			Password: sqlPassword,
-			Host:     sqlHost,
-			Port:     sqlPort,
-			Database: sqlDatabase,
+			Username: inputs.username,
+			Password: inputs.password,
+			Host:     inputs.host,
+			Port:     inputs.port,
+			Database: inputs.database,
 		}
 		if settings.Database == "" {
 			log.Println("Database was not provided. Defaulting to postgres for operations mode")
@@ -75,17 +94,17 @@ func buildDatabaseSettings(sqlType string, sqlUsername string, sqlPassword strin
 			settings.Port = "5432"
 		}
 		if settings.Username == "" {
-			log.Fatalln("Required argument [username] was not provided. Exiting")
+			return nil, errors.New("required argument [username] was not provided. Exiting")
 		}
 		if settings.Password == "" {
-			log.Fatalln("Required argument [password] was not provided. Exiting")
+			return nil, errors.New("required argument [password] was not provided. Exiting")
 		}
 		if settings.Host == "" {
-			log.Fatalln("Required argument [host] was not provided. Exiting")
+			return nil, errors.New("required argument [host] was not provided. Exiting")
 		}
-		return settings
+
+		return settings, nil
 	default:
-		log.Fatalln("Input sqlType is not of an accepted value.")
+		return nil, errors.New("input sqlType is not of an accepted value")
 	}
-	return nil
 }
