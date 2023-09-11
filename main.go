@@ -20,12 +20,14 @@ func main() {
 			log.Fatalln("No environment variables related to sql found. Please provide via arguments or environment variables.")
 			return
 		}
-		settings = utils.ParseEnvironmentVariables()
+		settings, err = utils.ParseEnvironmentVariables()
 	} else {
 		settings, err = utils.ParseInputFlags(os.Args[1:])
-		if err != nil {
-			log.Fatalf("Error parsing command line arguments. %s", err.Error())
-		}
+
+	}
+
+	if err != nil {
+		log.Fatalf(err.Error())
 	}
 	defer settings.CreateDatabaseWithUser()
 }
