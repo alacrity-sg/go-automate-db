@@ -13,21 +13,22 @@ func main() {
 	//
 	var settings *dbsvc.PGSettings
 	var err error
-	args := os.Args
-	if len(args) == 0 {
-		// environment variables mode
-		if os.Getenv("sql_type") == "" {
-			log.Fatalln("No environment variables related to sql found. Please provide via arguments or environment variables.")
-			return
-		}
+
+	if os.Getenv("SQL_HOST") != "" {
+		// Default to direct input mode
+		log.Println("Defaulting to environment variable mode")
 		settings, err = utils.ParseEnvironmentVariables()
 	} else {
+		// Env mode
+		log.Println("Using direct input mode")
 		settings, err = utils.ParseInputFlags(os.Args[1:])
-
 	}
 
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
-	defer settings.CreateDatabaseWithUser()
+	err = settings.CreateDatabaseWithUser()
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
 }

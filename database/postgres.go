@@ -24,7 +24,7 @@ type NewPGSettings struct {
 }
 
 func (settings *PGSettings) CreateDatabaseWithUser() error {
-	db := settings.connectPostgresDb()
+	db := settings.ConnectPostgresDb()
 	defer db.Close()
 
 	if len(settings.NewPGSettings) == 0 {
@@ -61,7 +61,7 @@ func (settings *PGSettings) CreateDatabaseWithUser() error {
 	return nil
 }
 
-func (settings *PGSettings) connectPostgresDb() *sql.DB {
+func (settings *PGSettings) ConnectPostgresDb() *sql.DB {
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		settings.Host,
 		settings.Port,
