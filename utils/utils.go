@@ -21,23 +21,32 @@ type CommandLineInputs struct {
 	newPassword string `default:""`
 }
 
-func ParseEnvironmentVariables() *database.PGSettings {
+func ParseEnvironmentVariables() (*database.PGSettings, error) {
 	settings := &database.PGSettings{
-		Username: os.Getenv("sql_username"),
-		Password: os.Getenv("sql_password"),
-		Host:     os.Getenv("sql_host"),
-		Port:     os.Getenv("sql_port"),
-		Database: "",
+		Username:      os.Getenv("SQL_USERNAME"),
+		Password:      os.Getenv("SQL_PASSWORD"),
+		Host:          os.Getenv("SQL_HOST"),
+		Port:          os.Getenv("SQL_PORT"),
+		Database:      os.Getenv("SQL_DATABASE"),
+		NewPGSettings: make([]*database.NewPGSettings, 0),
 	}
 
-	if os.Getenv("sql_database") != "" {
-		settings.Database = os.Getenv("sql_database")
-	} else {
-		// Operations mode
-		settings.Database = "postgres"
+	// Check if required variables are available
+	if settings.Username == "" || settings.Password == "" || settings.Host == "" {
+		return nil, errors.New("required environment settings [SQL_USERNAME, SQL_PASSWORD, SQL_HOST] is empty")
 	}
-	return settings
 
+	// Check if required new database settings is added
+	newDbSettings := &database.NewPGSettings{
+		Username: os.Getenv("SQL_NEW_USERNAME"),
+		Password: os.Getenv("SQL_NEW_PASSWORD"),
+		Database: os.Getenv("SQL_NEW_DATABASE"),
+	}
+	if newDbSettings.Username == "" || newDbSettings.Password == "" || newDbSettings.Database == "" {
+		return nil, errors.New("required environment settings [SQL_NEW_USERNAME, SQL_NEW_PASSWORD, SQL_NEW_DATABASE] is empty")
+	}
+	settings.NewPGSettings = append(settings.NewPGSettings, newDbSettings)
+	return settings, nil
 }
 
 func ParseInputFlags(args []string) (*database.PGSettings, error) {
