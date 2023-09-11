@@ -80,11 +80,12 @@ func buildDatabaseSettings(inputs *CommandLineInputs) (*database.PGSettings, err
 	switch strings.ToLower(inputs.dbType) {
 	case "postgres":
 		settings := &database.PGSettings{
-			Username: inputs.username,
-			Password: inputs.password,
-			Host:     inputs.host,
-			Port:     inputs.port,
-			Database: inputs.database,
+			Username:      inputs.username,
+			Password:      inputs.password,
+			Host:          inputs.host,
+			Port:          inputs.port,
+			Database:      inputs.database,
+			NewPGSettings: make([]*database.NewPGSettings, 0),
 		}
 		if settings.Database == "" {
 			log.Println("Database was not provided. Defaulting to postgres for operations mode")
@@ -95,16 +96,26 @@ func buildDatabaseSettings(inputs *CommandLineInputs) (*database.PGSettings, err
 			settings.Port = "5432"
 		}
 		if settings.Username == "" {
-			return nil, errors.New("required argument [username] was not provided. Exiting")
+			return nil, errors.New("required argument [username] is empty.")
 		}
 		if settings.Password == "" {
-			return nil, errors.New("required argument [password] was not provided. Exiting")
+			return nil, errors.New("required argument [password] is empty.")
 		}
 		if settings.Host == "" {
-			return nil, errors.New("required argument [host] was not provided. Exiting")
+			return nil, errors.New("required argument [host] is empty.")
 		}
 
+		if inputs.newDatabase == "" && inputs.newUsername == "" && inputs.newPassword == "" {
+			return nil, errors.New("required arguments [new_db, new_username, new_password] is empty.")
+		}
+		pgSettings := &database.NewPGSettings{
+			Database: inputs.newDatabase,
+			Username: inputs.newUsername,
+			Password: inputs.newPassword,
+		}
+		settings.NewPGSettings = append(settings.NewPGSettings, pgSettings)
 		return settings, nil
+
 	default:
 		return nil, errors.New("input sqlType is not of an accepted value")
 	}

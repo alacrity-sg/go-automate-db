@@ -1,11 +1,12 @@
 package main
 
 import (
-	_ "github.com/lib/pq"
 	dbsvc "go-automate-database/database"
 	"go-automate-database/utils"
 	"log"
 	"os"
+
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -26,5 +27,5 @@ func main() {
 			log.Fatalf("Error parsing command line arguments. %s", err.Error())
 		}
 	}
-	defer settings.CreateDatabaseWithUser("newUsername", "newPassword", "newDatabaseName")
+	defer settings.CreateDatabaseWithUser()
 }

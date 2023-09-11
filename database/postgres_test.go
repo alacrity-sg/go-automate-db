@@ -2,46 +2,107 @@ package database
 
 import (
 	"fmt"
-	"github.com/google/uuid"
-	_ "github.com/lib/pq"
+	"log"
 	"strings"
 	"testing"
+
+	"github.com/google/uuid"
+	_ "github.com/lib/pq"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestCreateDatabaseWithUser(t *testing.T) {
+func assertCrud(t *testing.T, uniqueId string, database string, username string, password string) {
+	// CRUD test
 
-	uniqueId := uuid.New().String()
-	uniqueUsableId := strings.Replace(uniqueId, "-", "", -1)
-	newDb := fmt.Sprintf("test_%s_db", uniqueUsableId)
-	newUser := fmt.Sprintf("test_user_%s", uniqueUsableId)
-	newPass := fmt.Sprintf("default_password")
 	settings := &PGSettings{
-		Username: "admin",
-		Password: "admin",
+		Database: database,
+		Username: username,
+		Password: password,
 		Host:     "localhost",
 		Port:     "5432",
-		Database: "postgres",
 	}
-	settings.CreateDatabaseWithUser(newUser, newPass, newDb)
-	settings.Username = newUser
-	settings.Password = newPass
-	settings.Database = newDb
 	db := settings.connectPostgresDb()
-	defer db.Close()
-	// CRUD test
-	_, err := db.Exec(fmt.Sprintf("CREATE TABLE test_%s (test_id varchar(50) primary key)", uniqueUsableId))
-	if err != nil {
-		t.Fatalf(err.Error())
+	_, err := db.Exec(fmt.Sprintf("CREATE TABLE test_%s (test_id varchar(50) primary key)", uniqueId))
+	assert.NoError(t, err)
+
+	_, err = db.Exec(fmt.Sprintf("INSERT INTO test_%s VALUES($1)", uniqueId), uniqueId)
+	assert.NoError(t, err)
+
+	_, err = db.Exec(fmt.Sprintf("DELETE FROM test_%s WHERE test_id = '%s'", uniqueId, uniqueId))
+	assert.NoError(t, err)
+	db.Close()
+}
+
+func TestCreateDatabaseWithUser_Single(t *testing.T) {
+	uniqueId := uuid.New().String()
+	uniqueUsableId := strings.Replace(uniqueId, "-", "", -1)
+
+	settings := &PGSettings{
+		Username:      "admin",
+		Password:      "admin",
+		Host:          "localhost",
+		Port:          "5432",
+		Database:      "postgres",
+		NewPGSettings: make([]*NewPGSettings, 0),
+	}
+	settings.NewPGSettings = append(settings.NewPGSettings, &NewPGSettings{
+		Database: fmt.Sprintf("test_%s_db", uniqueUsableId),
+		Username: fmt.Sprintf("test_user_%s", uniqueUsableId),
+		Password: uniqueUsableId,
+	})
+	settings.CreateDatabaseWithUser()
+	assertCrud(t, uniqueUsableId,
+		settings.NewPGSettings[0].Database,
+		settings.NewPGSettings[0].Username,
+		settings.NewPGSettings[0].Password,
+	)
+}
+
+func TestCreateDatabaseWithUser_Multiple(t *testing.T) {
+	uniqueId := uuid.New().String()
+	uniqueUsableId := strings.Replace(uniqueId, "-", "", -1)
+
+	settings := &PGSettings{
+		Username:      "admin",
+		Password:      "admin",
+		Host:          "localhost",
+		Port:          "5432",
+		Database:      "postgres",
+		NewPGSettings: make([]*NewPGSettings, 0),
 	}
 
-	_, err = db.Exec(fmt.Sprintf("INSERT INTO test_%s VALUES($1)", uniqueUsableId), uniqueUsableId)
-	if err != nil {
-		t.Fatalf(err.Error())
+	for i := 0; i < 2; i++ {
+		settings.NewPGSettings = append(settings.NewPGSettings, &NewPGSettings{
+			Database: fmt.Sprintf("test_%d_%s_db", i, uniqueUsableId),
+			Username: fmt.Sprintf("test_user_%d_%s", i, uniqueUsableId),
+			Password: uniqueUsableId,
+		})
 	}
 
-	_, err = db.Exec(fmt.Sprintf("DELETE FROM test_%s WHERE test_id = '%s'", uniqueUsableId, uniqueUsableId))
+	settings.CreateDatabaseWithUser()
 
-	if err != nil {
-		t.Fatalf(err.Error())
+	for i := 0; i < 2; i++ {
+		log.Println(settings.NewPGSettings[i])
+		assertCrud(t, uniqueUsableId,
+			settings.NewPGSettings[i].Database,
+			settings.NewPGSettings[i].Username,
+			settings.NewPGSettings[i].Password,
+		)
 	}
 }
+
+func TestCreateDatabaseWithUser_EmptyNew(t *testing.T) {
+
+	settings := &PGSettings{
+		Username:      "admin",
+		Password:      "admin",
+		Host:          "localhost",
+		Port:          "5432",
+		Database:      "postgres",
+		NewPGSettings: make([]*NewPGSettings, 0),
+	}
+
+	err := settings.CreateDatabaseWithUser()
+	assert.Error(t, err)
+}
+

@@ -2,9 +2,14 @@ package utils
 
 import (
 	"flag"
-	"github.com/stretchr/testify/assert"
+	"fmt"
+	"log"
 	"os"
+	"strings"
 	"testing"
+
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParseInputFlagsNoInput(t *testing.T) {
@@ -16,6 +21,7 @@ func TestParseInputFlagsNoInput(t *testing.T) {
 func TestParseInputFlagsShortFullSplit(t *testing.T) {
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
+	uniqueUsableId := strings.Replace(uuid.New().String(), "-", "", -1)
 	args := []string{
 		"-t", "postgres",
 		"-u", "admin",
@@ -23,6 +29,9 @@ func TestParseInputFlagsShortFullSplit(t *testing.T) {
 		"-P", "5432",
 		"-h", "localhost",
 		"-db", "postgres",
+		"-new_db", fmt.Sprintf("test_%s", uniqueUsableId),
+		"-new_username", fmt.Sprintf("test_user_%s", uniqueUsableId),
+		"-new_password", uniqueUsableId,
 	}
 	flag.NewFlagSet("test", flag.ContinueOnError)
 	response, err := ParseInputFlags(args)
@@ -34,8 +43,27 @@ func TestParseInputFlagsShortFullSplit(t *testing.T) {
 	assert.Equal(t, response.Database, args[11])
 }
 
+func TestParseInputFlagsShort_NoNewInput(t *testing.T) {
+	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	args := []string{
+		"-t", "postgres",
+		"-u", "admin",
+		"-p", "admin",
+		"-P", "5432",
+		"-h", "localhost",
+		"-db", "postgres",
+	}
+
+	flag.NewFlagSet("test", flag.ContinueOnError)
+	_, err := ParseInputFlags(args)
+	log.Println(err.Error())
+	assert.Error(t, err)
+}
+
 func TestParseInputFlagsFullSplit(t *testing.T) {
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+
+	uniqueUsableId := strings.Replace(uuid.New().String(), "-", "", -1)
 	args := []string{
 		"-type", "postgres",
 		"-username", "admin",
@@ -43,6 +71,9 @@ func TestParseInputFlagsFullSplit(t *testing.T) {
 		"-port", "5432",
 		"-host", "localhost",
 		"-database", "postgres",
+		"-new_db", fmt.Sprintf("test_%s", uniqueUsableId),
+		"-new_username", fmt.Sprintf("test_user_%s", uniqueUsableId),
+		"-new_password", uniqueUsableId,
 	}
 	response, err := ParseInputFlags(args)
 	assert.NoError(t, err)
