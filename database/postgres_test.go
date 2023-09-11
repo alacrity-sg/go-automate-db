@@ -21,7 +21,7 @@ func assertCrud(t *testing.T, uniqueId string, database string, username string,
 		Host:     "localhost",
 		Port:     "5432",
 	}
-	db := settings.connectPostgresDb()
+	db := settings.ConnectPostgresDb()
 	_, err := db.Exec(fmt.Sprintf("CREATE TABLE test_%s (test_id varchar(50) primary key)", uniqueId))
 	assert.NoError(t, err)
 
@@ -105,4 +105,3 @@ func TestCreateDatabaseWithUser_EmptyNew(t *testing.T) {
 	err := settings.CreateDatabaseWithUser()
 	assert.Error(t, err)
 }
-
