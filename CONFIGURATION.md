@@ -20,12 +20,12 @@ sql:
     port: 5432
     database: postgres
     username: postgres
-    password: P@ssw0rd123 
-    #password: 
-    #  secret:
-    #    type: secretsmanager | kubernetes | vault
-    #    name: my-secret-name
-    #    key: plaintext | my-secret-key 
+    password: P@ssw0rd123
+#    password: 
+#      secret:
+#        type: secretsmanager | kubernetes | vault
+#        name: my-secret-name
+#        key: plaintext | my-secret-key 
 databases: 
   - name: "my-first-database"
     username: "my-first-user"

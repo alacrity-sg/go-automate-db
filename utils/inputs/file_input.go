@@ -8,13 +8,21 @@ import (
 )
 
 type FileInputV1SQL struct {
-	Type     string `yaml:"type"`
-	Mode     string `yaml:"mode"`
-	Host     string `yaml:"host"`
-	Port     string `yaml:"port"`
-	Database string `yaml:"database"`
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
+	Type     string            `yaml:"type"`
+	Mode     string            `yaml:"mode"`
+	Host     string            `yaml:"host"`
+	Port     string            `yaml:"port"`
+	Database string            `yaml:"database"`
+	Username string            `yaml:"username"`
+	Password string            `yaml:"password"`
+	Secret   FileInputV1Secret `yaml:"secret"`
+}
+
+type FileInputV1Secret struct {
+	Engine string `yaml:"engine"`
+	Type   string `yaml:"type"`
+	Name   string `yaml:"name"`
+	Key    string `yaml:"key"`
 }
 
 type FileInputV1Databases struct {

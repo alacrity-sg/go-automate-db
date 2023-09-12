@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func TestParseInputFile(t *testing.T) {
+func TestParseInputFileFull(t *testing.T) {
 	testId := helper.CreateUniqueTestId()
 	config := &FileInputV1{
 		Version: 1,
