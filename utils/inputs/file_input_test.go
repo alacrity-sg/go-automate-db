@@ -10,7 +10,7 @@ import (
 )
 
 func TestParseInputFile(t *testing.T) {
-	uniqueId := helper.GenerateTestId()
+	testId := helper.CreateUniqueTestId()
 	config := &FileInputV1{
 		Version: 1,
 		SQL: FileInputV1SQL{
@@ -24,16 +24,16 @@ func TestParseInputFile(t *testing.T) {
 		},
 		Databases: []FileInputV1Databases{
 			{
-				Name:     fmt.Sprintf("test_%s", uniqueId),
-				Username: fmt.Sprintf("test_%s", uniqueId),
-				Password: fmt.Sprintf(uniqueId),
+				Name:     fmt.Sprintf("test_%s", testId),
+				Username: fmt.Sprintf("test_%s", testId),
+				Password: fmt.Sprintf(testId),
 			},
 		},
 	}
 	data, err := yaml.Marshal(config)
 	assert.NoError(t, err)
 
-	file, err := os.CreateTemp("", fmt.Sprintf("sample-%s.yaml", uniqueId))
+	file, err := os.CreateTemp("", fmt.Sprintf("sample-%s.yaml", testId))
 	assert.NoError(t, err)
 	write, err := file.Write(data)
 	assert.NoError(t, err)

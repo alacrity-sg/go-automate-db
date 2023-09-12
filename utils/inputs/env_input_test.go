@@ -2,14 +2,13 @@ package inputs
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"strings"
+	helper "go-automate-database/internal/testing"
 	"testing"
 )
 
 func TestParseEnvironmentVariablesFull(t *testing.T) {
-	uniqueUsableId := strings.Replace(uuid.New().String(), "-", "", -1)
+	uniqueUsableId := helper.CreateUniqueTestId()
 	var inputMap map[string]string
 
 	inputMap = map[string]string{
@@ -58,7 +57,7 @@ func TestParseEnvironmentVariablesEmptyNew(t *testing.T) {
 }
 
 func TestParseEnvironmentVariablesEmptyRequired(t *testing.T) {
-	uniqueUsableId := strings.Replace(uuid.New().String(), "-", "", -1)
+	uniqueUsableId := helper.CreateUniqueTestId()
 
 	var inputMap map[string]string
 

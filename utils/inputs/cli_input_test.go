@@ -3,11 +3,10 @@ package inputs
 import (
 	"flag"
 	"fmt"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	helper "go-automate-database/internal/testing"
 	"log"
 	"os"
-	"strings"
 	"testing"
 )
 
@@ -19,8 +18,7 @@ func TestParseInputFlagsNoInput(t *testing.T) {
 
 func TestParseInputFlagsShortFullSplit(t *testing.T) {
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-
-	uniqueUsableId := strings.Replace(uuid.New().String(), "-", "", -1)
+	uniqueUsableId := helper.CreateUniqueTestId()
 	args := []string{
 		"-t", "postgres",
 		"-u", "admin",
@@ -62,7 +60,7 @@ func TestParseInputFlagsShortNoNewInput(t *testing.T) {
 func TestParseInputFlagsFull(t *testing.T) {
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
-	uniqueUsableId := strings.Replace(uuid.New().String(), "-", "", -1)
+	uniqueUsableId := helper.CreateUniqueTestId()
 	args := []string{
 		"-type", "postgres",
 		"-username", "admin",
